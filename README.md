@@ -1,4 +1,4 @@
-# FixLink
+# fixlink
 
 A short description of the project
 
