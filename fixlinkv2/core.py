@@ -1,6 +1,7 @@
 """fixlinkv2 – entfernt leere 'link'‑Felder aus allen API‑Aufrufen."""
 
 from django.utils.translation import gettext_lazy as _
+from django.urls import resolve            # hilft beim Routen‑Match
 
 from plugin import InvenTreePlugin
 from plugin.mixins import (
@@ -21,10 +22,19 @@ class fixlinkv2(UserInterfaceMixin, SettingsMixin, ValidationMixin, InvenTreePlu
     AUTHOR = "Jan Schüler"
     LICENSE = "MIT"
 
-    def ready(self):
+    def get_ui_page_scripts(self, request, context, **kwargs):
         """
-        Wird von InvenTree nach dem App‑Bootstrap aufgerufen.
-        Der Import oben reicht schon – ready() nur damit klar ist,
-        dass das Plugin Signal‑Handler nutzt.
+        Wird bei jedem Seitenaufruf gefragt, welche Skripte
+        für die aktuelle URL injiziert werden sollen.
         """
-        super().ready()
+        match = resolve(request.path_info)
+
+        # Prüfen, ob wir auf der Teile‑Listen‑Seite sind
+        if match.url_name == 'part-index':     # <‑ passt für 0.12+; älter: 'part-list'
+            return [{
+                "key": "fixlinkv2-parts-patch",
+                "source": self.plugin_static_file("fixlink_patch.js:initPatch"),
+            }]
+
+        # alle anderen Seiten: nichts einbinden
+        return []
