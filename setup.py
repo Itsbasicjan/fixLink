@@ -31,6 +31,7 @@ setuptools.setup(
     license="MIT",
     packages=setuptools.find_packages(),
     include_package_data=True,
+    package_data={"fixlinkv2": ["static/*.js"]},
     install_requires=[
         # Enter your plugin library dependencies here
     ],
