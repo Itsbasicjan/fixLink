@@ -1,6 +1,6 @@
-# fixlink
+# fixlinkv2
 
-A short description of the project
+A short description of the project!
 
 ## Installation
 
@@ -13,7 +13,7 @@ A short description of the project
 To install manually via the command line, run the following command:
 
 ```bash
-pip install fixlink
+pip install fixlinkv2
 ```
 
 ## Configuration
