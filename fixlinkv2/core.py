@@ -8,6 +8,7 @@ from plugin.mixins import (
     ValidationMixin,
     UserInterfaceMixin,   # <‑‑ neu
 )
+from . import signals
 
 from . import PLUGIN_VERSION
 
@@ -20,15 +21,10 @@ class fixlinkv2(UserInterfaceMixin, SettingsMixin, ValidationMixin, InvenTreePlu
     AUTHOR = "Jan Schüler"
     LICENSE = "MIT"
 
-    # ------------------------------------------------------------------
-    #  UI‑Hook: globales Skript, wird unmittelbar nach dem UI‑Bootstrap
-    #  geladen – dadurch ist der Patch auf allen Seiten sofort aktiv.
-    # ------------------------------------------------------------------
-    def get_ui_global_scripts(self, request, context, **kwargs):
-        """Liefert die JS‑Datei, die den XMLHttpRequest/fetch‑Patch enthält."""
-        return [
-            {
-                "key": "fixlinkv2-global-patch",
-                "source": self.plugin_static_file("fixlink_patch.js:initPatch"),
-            }
-        ]
+    def ready(self):
+        """
+        Wird von InvenTree nach dem App‑Bootstrap aufgerufen.
+        Der Import oben reicht schon – ready() nur damit klar ist,
+        dass das Plugin Signal‑Handler nutzt.
+        """
+        super().ready()
