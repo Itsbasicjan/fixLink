@@ -1,39 +1,45 @@
-/** fixlinkv2/static/fixlink_patch.js
- *  Entfernt leere 'link'‑Strings aus allen REST‑Bodies (XHR + fetch)
- *  Wird einmalig von der UI geladen – danach global aktiv.
+/* Entfernt leere 'link'‑Strings aus allen REST‑Bodies (XHR + fetch + Request‑Objekte)
+ * Wird einmal beim UI‑Bootstrap geladen und patcht danach global.
  */
-function sanitizeBody(body) {
-    if (typeof body !== 'string') {           // FormData, Blob, null …
-      return body;
+function sanitize(data) {
+    if (!data) return data;
+  
+    // String » JSON?
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch { return data; }
     }
-    try {
-      const json = JSON.parse(body);
-      if (json && json.link === '') {
-        delete json.link;                     // "" → Feld komplett entfernen
-        return JSON.stringify(json);
-      }
-    } catch (_) {/* Body war kein JSON – ignorieren */}
-    return body;
+  
+    // Objekt direkt prüfen
+    if (typeof data === 'object' && data.link === '') {
+      delete data.link;
+    }
+  
+    return typeof data === 'string' ? JSON.stringify(data) : data;
   }
   
   /* ---------- XMLHttpRequest ---------- */
-  const _send = XMLHttpRequest.prototype.send;
+  const send0 = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function (body) {
-    return _send.call(this, sanitizeBody(body));
+    return send0.call(this, sanitize(body));
   };
   
   /* ---------- WHATWG Fetch ---------- */
-  const _fetch = window.fetch;
-  window.fetch = function (input, init = {}) {
-    if (init.body) {
-      init = { ...init, body: sanitizeBody(init.body) };
+  const fetch0 = window.fetch;
+  window.fetch = async function (resource, init = {}) {
+  
+    // 1) fetch(url, {body: ...})
+    if (init.body !== undefined) {
+      init = { ...init, body: sanitize(init.body) };
+  
+    // 2) fetch(new Request(...))
+    } else if (resource instanceof Request) {
+      const bodyText = await resource.clone().text();
+      resource = new Request(resource, { body: sanitize(bodyText) });
     }
-    return _fetch(input, init);
+  
+    return fetch0(resource, init);
   };
   
-  /* Standard‑Hook für das UI‑Mixin */
-  export function initPatch() {
-    /* Nichts zu tun – Patch ist schon oben installiert */
-    return null;
-  }
+  /* Einstiegspunkt für das UI‑Mixin – muss exportiert sein */
+  export function initPatch() { /* Patch ist bereits aktiv */ }
   
