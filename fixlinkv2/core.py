@@ -9,7 +9,6 @@ from plugin.mixins import (
     ValidationMixin,
     UserInterfaceMixin,   # <‑‑ neu
 )
-from . import signals
 
 from . import PLUGIN_VERSION
 
